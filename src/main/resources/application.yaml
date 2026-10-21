@@ -2,7 +2,7 @@ spring:
   application:
     name: trust-service
   datasource:
-    url: ${TRUST_DB_URL:${DB_URL:jdbc:postgresql://${DB_HOST:10.212.10.135}:${DB_PORT:5432}/${TRUST_DB_NAME:trustdb}}}
+    url: ${TRUST_DB_URL:${DB_URL:jdbc:postgresql://${DB_HOST:10.212.13.208}:${DB_PORT:5432}/${TRUST_DB_NAME:trustdb}}}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:Welcome@123}
     driver-class-name: org.postgresql.Driver
