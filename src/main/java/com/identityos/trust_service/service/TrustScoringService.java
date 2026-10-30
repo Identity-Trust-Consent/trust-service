@@ -63,6 +63,17 @@ public class TrustScoringService {
     return response;
   }
 
+  public TrustScoreResponse evaluateIntegration(TrustEvaluationRequest request) {
+    var signals=repository.integrationSignals(request.subjectId(),request.organizationId(),request.applicationId());
+    // Caller weights are never used in this path; only the fixed signal vocabulary is scored.
+    signals.forEach(s->s.remove("weight"));
+    Score score=calculate(signals);
+    double value=clamp(score.identityScore+score.behaviourScore+score.riskPenalty,0,100);
+    var response=new TrustScoreResponse(request.subjectType(),request.subjectId(),request.organizationId(),request.applicationId(),
+        round(score.identityScore),round(score.behaviourScore),round(score.riskPenalty),round(value),trustLevel(value),decision(value),score.reasons,repository.utcNow());
+    repository.saveSnapshot(response);return response;
+  }
+
   private Score calculate(List<Map<String, Object>> signals) {
     double identity = 20;
     double behaviour = 20;

@@ -85,6 +85,18 @@ public class TrustSignalRepository {
         limit);
   }
 
+  /** Strict integration evaluation is tenant-scoped and ignores stale or untrusted legacy signals. */
+  public List<Map<String,Object>> integrationSignals(String subject,String organization,String application) {
+    return jdbcTemplate.queryForList("""
+        select * from trust_signal_event where subject_type='USER' and subject_id=?
+          and organization_id=? and application_id=? and occurred_at >= now()-interval '30 days'
+          and source in ('onboarding-and-identity-service','authentication-and-authorization-service','identity-os-integration')
+          and (outcome='SUCCESS' or signal_type in ('LOGIN_FAILED','OTP_FAILED','NEW_DEVICE_LOGIN',
+            'SUSPICIOUS_IP_DETECTED','IMPOSSIBLE_TRAVEL','BOT_DETECTED'))
+        order by occurred_at desc limit 500
+        """,subject,organization,application);
+  }
+
   public void saveSnapshot(TrustScoreResponse response) {
     String reasons = json(response.reasons());
     jdbcTemplate.update(
